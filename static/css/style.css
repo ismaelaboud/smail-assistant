@@ -184,9 +184,8 @@ body {
 }
 
 .mic-button.recording {
-    background: linear-gradient(135deg, #ff0000, #cc0000);
+    background: rgba(255, 0, 0, 0.2);
     animation: pulse 1.5s infinite;
-    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
 }
 
 .mic-button svg {
@@ -272,11 +271,13 @@ body {
 .workspace-icon {
     display: flex;
     align-items: center;
-    padding: 10px;
+    padding: 15px;
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
     background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid transparent;
+    margin-bottom: 8px;
 }
 
 .workspace-icon:hover {
@@ -284,13 +285,21 @@ body {
     transform: translateX(5px);
 }
 
+.workspace-icon.active {
+    background: rgba(0, 123, 255, 0.2);
+    border-left: 3px solid #007bff;
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.2);
+}
+
 .workspace-icon img {
     width: 24px;
     height: 24px;
-    margin-right: 10px;
+    margin-right: 12px;
 }
 
 .workspace-icon span {
     color: white;
     font-size: 14px;
-} 
+    font-weight: 500;
+}
+ 

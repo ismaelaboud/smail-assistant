@@ -16,7 +16,7 @@ class PersonalizedChatbot:
         self.model = "mistral-tiny"  # Use mistral-tiny for testing
         
         self.engine = pyttsx3.init()
-        self.name = "smail"
+        self.name = name
         self.voice_config = {
             'gender': 'male',
             'rate': 150,
@@ -197,6 +197,31 @@ Always respond as smail and be helpful and friendly."""
                 'text': f"I apologize, but I encountered an error. Please try again. Error: {str(e)}",
                 'audio': ''
             }
+
+    def text_to_speech(self, text):
+        try:
+            # Create a queue for the audio data
+            audio_queue = queue.Queue()
+            
+            def save_audio():
+                self.engine.save_to_file(text, 'temp.mp3')
+                self.engine.runAndWait()
+                with open('temp.mp3', 'rb') as audio_file:
+                    audio_data = audio_file.read()
+                    audio_queue.put(base64.b64encode(audio_data).decode())
+
+            # Run audio generation in a separate thread
+            audio_thread = threading.Thread(target=save_audio)
+            audio_thread.start()
+            audio_thread.join()
+            
+            # Get the audio data from the queue
+            audio_base64 = audio_queue.get()
+            return audio_base64
+            
+        except Exception as e:
+            print(f"Error in text_to_speech: {str(e)}")
+            return ''
 
     def set_voice_properties(self, gender='male', rate=150, volume=0.9):
         self.voice_config.update({

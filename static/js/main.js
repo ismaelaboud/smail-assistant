@@ -2,14 +2,17 @@ let recognition;
 if ('webkitSpeechRecognition' in window) {
     recognition = new webkitSpeechRecognition();
     recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US'; // You can change the language here
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    recognition.maxAlternatives = 1;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chat-messages');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
+    const micButton = document.getElementById('mic-button');
+    let isRecording = false;
 
     // Voice settings elements
     const genderSelect = document.getElementById('gender');
@@ -17,14 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const volumeInput = document.getElementById('volume');
     const rateValue = document.getElementById('rate-value');
     const volumeValue = document.getElementById('volume-value');
-
-    // Add these new variables
-    const micButton = document.getElementById('mic-button');
-    let isRecording = false;
-
-    // Add these near the top of your DOMContentLoaded function
-    const botNameInput = document.getElementById('bot-name');
-    const updateNameBtn = document.getElementById('update-name-btn');
 
     function updateVoiceSettings() {
         fetch('/update-voice', {
@@ -80,9 +75,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             addMessage(data.text, false);
 
-            // Play audio response
-            const audio = new Audio(`data:audio/mp3;base64,${data.audio}`);
-            audio.play();
+            // Play audio response if available
+            if (data.audio) {
+                const audio = new Audio(`data:audio/mp3;base64,${data.audio}`);
+                audio.play();
+            }
 
         } catch (error) {
             console.error('Error:', error);
@@ -90,7 +87,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Add this new function
     function toggleRecording() {
         if (!recognition) {
             alert('Speech recognition is not supported in your browser');
@@ -98,85 +94,98 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (!isRecording) {
-            // Start recording
-            recognition.start();
-            isRecording = true;
-            micButton.classList.add('recording');
+            // Request microphone permission explicitly
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream) {
+                    recognition.start();
+                    isRecording = true;
+                    micButton.classList.add('recording');
+                    userInput.placeholder = 'Listening...';
+                    
+                    // Add visual feedback
+                    addMessage("Listening... Speak now", false);
+                })
+                .catch(function(err) {
+                    console.error('Microphone access denied:', err);
+                    addMessage("Please enable microphone access to use voice input", false);
+                });
         } else {
-            // Stop recording
             recognition.stop();
             isRecording = false;
             micButton.classList.remove('recording');
+            userInput.placeholder = 'Type your message...';
         }
     }
 
-    // Add speech recognition event handlers
+    // Modified speech recognition handlers
+    recognition.onstart = () => {
+        console.log('Speech recognition started');
+        userInput.placeholder = 'Listening...';
+    };
+
     recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        userInput.value = transcript;
-        sendMessage();
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript;
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+
+        // Show the transcript in the input field
+        userInput.value = finalTranscript || interimTranscript;
+
+        // If we have a final transcript and it's not empty
+        if (finalTranscript && finalTranscript.trim().length > 0) {
+            sendMessage();
+        }
     };
 
     recognition.onend = () => {
+        console.log('Speech recognition ended');
         isRecording = false;
         micButton.classList.remove('recording');
+        userInput.placeholder = 'Type your message...';
+        
+        // If no text was captured, provide feedback
+        if (!userInput.value.trim()) {
+            addMessage("I couldn't hear anything. Please try again.", false);
+        }
     };
 
     recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         isRecording = false;
         micButton.classList.remove('recording');
+        userInput.placeholder = 'Type your message...';
+        
+        let errorMessage;
+        switch(event.error) {
+            case 'no-speech':
+                errorMessage = "No speech was detected. Please try again.";
+                break;
+            case 'audio-capture':
+                errorMessage = "No microphone was found. Ensure it is plugged in and enabled.";
+                break;
+            case 'not-allowed':
+                errorMessage = "Microphone access was denied. Please enable it in your browser settings.";
+                break;
+            case 'network':
+                errorMessage = "Network error occurred. Please check your connection.";
+                break;
+            default:
+                errorMessage = `Error: ${event.error}. Please try again.`;
+        }
+        addMessage(errorMessage, false);
     };
 
-    // Add click handler for mic button
     micButton.addEventListener('click', toggleRecording);
-
     sendButton.addEventListener('click', sendMessage);
     userInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
-
-    // Add this function
-    async function updateBotName() {
-        const newName = botNameInput.value.trim();
-        if (!newName) return;
-
-        try {
-            const response = await fetch('/update-name', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name: newName })
-            });
-
-            const data = await response.json();
-            if (data.status === 'success') {
-                addMessage(`My name has been updated to ${newName}!`, false);
-            }
-        } catch (error) {
-            console.error('Error updating name:', error);
-        }
-    }
-
-    // Add this event listener
-    updateNameBtn.addEventListener('click', updateBotName);
-
-    // Add this function to handle workspace clicks
-    function openWorkspace(type) {
-        fetch('/open-workspace', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ workspace: type })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.url) {
-                window.open(data.url, '_blank');
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
 }); 

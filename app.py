@@ -3,8 +3,6 @@ from chatbot import PersonalizedChatbot
 import os
 from dotenv import load_dotenv
 import requests
-from google_auth import get_google_auth
-from googleapiclient.discovery import build
 
 # Load environment variables
 load_dotenv()
@@ -21,10 +19,7 @@ def chat():
     try:
         message = request.json.get('message')
         
-        # Get timeout from env or use default
-        timeout = int(os.getenv('REQUEST_TIMEOUT', 30))
-        
-        # Update API call with timeout and required parameters
+        # Get response from Mistral AI
         response = requests.post(
             'https://api.mistral.ai/v1/chat/completions',
             headers={
@@ -32,58 +27,40 @@ def chat():
                 'Content-Type': 'application/json'
             },
             json={
-                'model': 'mistral-tiny',  # Specify the model
-                'messages': [
-                    {"role": "system", "content": chatbot.system_prompt},  # Add system prompt
-                    {"role": "user", "content": message}
-                ],
-                'temperature': 0.7,  # Add temperature
-                'max_tokens': 500  # Add max_tokens
+                'model': 'mistral-tiny',
+                'messages': [{"role": "user", "content": message}],
+                'temperature': 0.7,
+                'max_tokens': 500
             },
-            timeout=timeout
+            timeout=int(os.getenv('REQUEST_TIMEOUT', 30))
         )
         
-        # Handle API errors
         response.raise_for_status()
+        bot_response = response.json()['choices'][0]['message']['content']
+        
+        # Generate audio response
+        audio_response = chatbot.text_to_speech(bot_response)
         
         return jsonify({
-            'text': response.json()['choices'][0]['message']['content'],
-            'audio': ''  # Add audio processing as needed
+            'text': bot_response,
+            'audio': audio_response
         })
 
-    except requests.Timeout:
-        return jsonify({
-            'text': 'I apologize, but the request timed out. Please try again.',
-            'audio': ''
-        }), 504
-        
-    except requests.RequestException as e:
+    except Exception as e:
         return jsonify({
             'text': f'I apologize, but there was an error: {str(e)}',
             'audio': ''
         }), 500
 
-@app.route('/open-workspace', methods=['POST'])
-def open_workspace():
-    workspace = request.json.get('workspace')
-    
-    try:
-        creds = get_google_auth()
-        
-        urls = {
-            'gmail': 'https://mail.google.com',
-            'docs': 'https://docs.google.com',
-            'sheets': 'https://sheets.google.com',
-            'drive': 'https://drive.google.com'
-        }
-        
-        if workspace in urls:
-            return jsonify({'url': urls[workspace]})
-        
-        return jsonify({'error': 'Invalid workspace type'}), 400
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+@app.route('/update-voice', methods=['POST'])
+def update_voice():
+    config = request.json
+    chatbot.set_voice_properties(
+        gender=config.get('gender', 'male'),
+        rate=int(config.get('rate', 150)),
+        volume=float(config.get('volume', 0.9))
+    )
+    return jsonify({'status': 'success'})
 
 if __name__ == '__main__':
     app.run(debug=True) 

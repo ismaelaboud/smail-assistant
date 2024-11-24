@@ -6,29 +6,27 @@
     <title>AI Chatbot</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <div class="sidebar">
-            <h3>Google Workspace</h3>
-            <div class="workspace-icons">
-                <div class="workspace-icon" onclick="openWorkspace('gmail')">
-                    <img src="{{ url_for('static', filename='images/gmail.png') }}" alt="Gmail">
-                    <span>Gmail</span>
-                </div>
-                <div class="workspace-icon" onclick="openWorkspace('docs')">
-                    <img src="{{ url_for('static', filename='images/docs.png') }}" alt="Docs">
-                    <span>Docs</span>
-                </div>
-                <div class="workspace-icon" onclick="openWorkspace('sheets')">
-                    <img src="{{ url_for('static', filename='images/sheets.png') }}" alt="Sheets">
-                    <span>Sheets</span>
-                </div>
-                <div class="workspace-icon" onclick="openWorkspace('drive')">
-                    <img src="{{ url_for('static', filename='images/drive.png') }}" alt="Drive">
-                    <span>Drive</span>
-                </div>
+        <div class="settings-panel">
+            <h3>Voice Settings</h3>
+            <div class="setting-item">
+                <label for="gender">Voice Gender:</label>
+                <select id="gender" class="glow">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="rate">Speaking Rate:</label>
+                <input type="range" id="rate" min="50" max="300" value="150" class="glow">
+                <span id="rate-value">150</span>
+            </div>
+            <div class="setting-item">
+                <label for="volume">Volume:</label>
+                <input type="range" id="volume" min="0" max="1" step="0.1" value="0.9" class="glow">
+                <span id="volume-value">0.9</span>
             </div>
         </div>
         
@@ -36,6 +34,14 @@
             <div class="chat-messages" id="chat-messages"></div>
             <div class="chat-input-container">
                 <input type="text" id="user-input" placeholder="Type your message..." class="glow">
+                <button id="mic-button" class="mic-button glow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                </button>
                 <button id="send-button" class="glow">Send</button>
             </div>
         </div>
