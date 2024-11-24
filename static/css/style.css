@@ -12,10 +12,11 @@ body {
 
 .container {
     display: flex;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
     height: 100vh;
+    gap: 30px;
 }
 
 .settings-panel {
@@ -27,6 +28,10 @@ body {
     backdrop-filter: blur(4px);
     border: 1px solid rgba(255, 255, 255, 0.18);
     color: white;
+    margin-right: 30px;
+    height: fit-content;
+    position: sticky;
+    top: 20px;
 }
 
 .settings-panel h3 {
@@ -64,6 +69,7 @@ body {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 15px;
     overflow: hidden;
+    min-width: 0;
 }
 
 .chat-messages {
