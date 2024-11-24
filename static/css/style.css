@@ -30,18 +30,17 @@ body {
     backdrop-filter: blur(4px);
     border: 1px solid rgba(255, 255, 255, 0.18);
     color: white;
-    margin-right: 30px;
-    height: fit-content;
-    position: sticky;
-    top: 20px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
     transition: transform 0.3s ease, opacity 0.3s ease;
-    transform-origin: left center;
+    z-index: 100;
 }
 
 .settings-panel.hidden {
     transform: translateX(-100%);
     opacity: 0;
-    position: absolute;
     pointer-events: none;
 }
 
@@ -81,7 +80,7 @@ body {
     border-radius: 15px;
     overflow: hidden;
     min-width: 0;
-    margin-left: 60px;
+    margin: 20px;
 }
 
 .chat-messages {
@@ -140,49 +139,66 @@ body {
     display: flex;
     gap: 10px;
     align-items: center;
-    margin-left: -60px;
-    padding-left: 80px;
+}
+
+.input-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
 }
 
 #user-input {
-    flex: 1;
+    width: 100%;
     padding: 15px;
+    padding-right: 45px;
     border: none;
     border-radius: 15px;
-    background: rgba(255, 255, 255, 0.1);
+    background: transparent;
     color: white;
     font-size: 16px;
     transition: all 0.3s ease;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-#user-input:focus {
-    outline: none;
-    box-shadow: 0 0 20px rgba(0, 123, 255, 0.3);
-    background: rgba(255, 255, 255, 0.15);
 }
 
 #user-input::placeholder {
     color: rgba(255, 255, 255, 0.5);
 }
 
-#send-button {
-    padding: 15px 30px;
-    background: linear-gradient(135deg, #00a8ff, #007bff);
-    color: white;
+.send-icon {
+    position: absolute;
+    right: 12px;
+    background: transparent;
     border: none;
-    border-radius: 15px;
     cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.3s ease;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.send-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: rgba(255, 255, 255, 0.7);
+    transition: all 0.3s ease;
+}
+
+.send-icon:hover svg {
+    stroke: white;
+    transform: translateX(2px);
+}
+
+#send-button {
+    background: transparent;
+    box-shadow: none;
 }
 
 #send-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    transform: none;
+    box-shadow: none;
 }
 
 .mic-button {
@@ -383,29 +399,16 @@ body {
 }
 
 @media (max-width: 768px) {
-    .settings-panel {
-        position: fixed;
-        left: 0;
-        top: 0;
-        height: 100vh;
-        z-index: 999;
-    }
-    
-    .container {
-        padding-left: 20px;
+    .chat-app-container {
+        padding-left: 0;
     }
     
     .chat-container {
-        margin-left: 0;
+        margin: 10px;
     }
     
-    .chat-input-container {
-        margin-left: 0;
-        padding-left: 20px;
-    }
-    
-    .toggle-btn {
-        bottom: 80px;
+    .settings-panel {
+        width: 280px;
     }
 }
 
@@ -470,6 +473,9 @@ body {
 .chat-app-container {
     min-height: 100vh;
     background: linear-gradient(135deg, #1a1c2c, #4a1942);
+    display: flex;
+    padding-left: 300px;
+    position: relative;
 }
 
 @keyframes fadeIn {
