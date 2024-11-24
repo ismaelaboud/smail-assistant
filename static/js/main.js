@@ -56,7 +56,29 @@ document.addEventListener('DOMContentLoaded', function() {
     function addMessage(message, isUser) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
-        messageDiv.textContent = message;
+        
+        // Format the message if it's from the bot and contains formatting markers
+        if (!isUser) {
+            // Replace ### with section headers
+            message = message.replace(/###\s*(.*?)\s*###/g, '<h3>$1</h3>');
+            
+            // Replace ** ** with bold text
+            message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Convert bullet points
+            message = message.replace(/####\s*(.*?)(?=####|$)/g, '<div class="section">$1</div>');
+            message = message.replace(/\n-\s*(.*)/g, '<li>$1</li>');
+            
+            // Handle lists
+            if (message.includes('<li>')) {
+                message = message.replace(/((?:<li>.*<\/li>)+)/g, '<ul>$1</ul>');
+            }
+            
+            messageDiv.innerHTML = message;
+        } else {
+            messageDiv.textContent = message;
+        }
+        
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -254,4 +276,16 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleButton.querySelector('svg').style.transform = 'rotate(180deg)';
         }
     }
+
+    // Update the usePrompt function
+    function usePrompt(prompt) {
+        const userInput = document.getElementById('user-input');
+        userInput.value = prompt;
+        userInput.focus();
+        // Optional: Automatically send the message
+        // sendMessage();
+    }
+
+    // Make sure usePrompt is accessible globally
+    window.usePrompt = usePrompt;
 }); 
