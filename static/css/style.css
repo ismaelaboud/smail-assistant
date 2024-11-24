@@ -17,6 +17,8 @@ body {
     padding: 20px;
     height: 100vh;
     gap: 30px;
+    position: relative;
+    padding-left: 70px;
 }
 
 .settings-panel {
@@ -32,6 +34,15 @@ body {
     height: fit-content;
     position: sticky;
     top: 20px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform-origin: left center;
+}
+
+.settings-panel.hidden {
+    transform: translateX(-100%);
+    opacity: 0;
+    position: absolute;
+    pointer-events: none;
 }
 
 .settings-panel h3 {
@@ -70,6 +81,7 @@ body {
     border-radius: 15px;
     overflow: hidden;
     min-width: 0;
+    margin-left: 60px;
 }
 
 .chat-messages {
@@ -128,6 +140,8 @@ body {
     display: flex;
     gap: 10px;
     align-items: center;
+    margin-left: -60px;
+    padding-left: 80px;
 }
 
 #user-input {
@@ -337,5 +351,135 @@ body {
     width: 20px;
     height: 20px;
     stroke: white;
+}
+
+.toggle-btn {
+    position: fixed;
+    left: 20px;
+    bottom: 100px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.toggle-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: white;
+    transition: transform 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .settings-panel {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        z-index: 999;
+    }
+    
+    .container {
+        padding-left: 20px;
+    }
+    
+    .chat-container {
+        margin-left: 0;
+    }
+    
+    .chat-input-container {
+        margin-left: 0;
+        padding-left: 20px;
+    }
+    
+    .toggle-btn {
+        bottom: 80px;
+    }
+}
+
+/* Add these new styles at the top */
+.landing-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #1a1c2c, #4a1942);
+    padding: 20px;
+}
+
+.hero-section {
+    text-align: center;
+    max-width: 800px;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    animation: fadeIn 0.5s ease-out;
+}
+
+.hero-section h1 {
+    font-size: 3.5rem;
+    color: white;
+    margin-bottom: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 40px;
+    font-weight: 300;
+}
+
+.start-chat-btn {
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, #00a8ff, #007bff);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.start-chat-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+
+.chat-app-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1c2c, #4a1942);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
  

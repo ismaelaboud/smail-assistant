@@ -1,3 +1,8 @@
+function startChat() {
+    document.getElementById('landing-page').style.display = 'none';
+    document.getElementById('chat-app').style.display = 'flex';
+}
+
 let recognition;
 if ('webkitSpeechRecognition' in window) {
     recognition = new webkitSpeechRecognition();
@@ -220,4 +225,32 @@ document.addEventListener('DOMContentLoaded', function() {
     userInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
+
+    // Add these at the top with other constants
+    const toggleButton = document.getElementById('toggle-sidebar');
+    const settingsPanel = document.querySelector('.settings-panel');
+    let isSidebarVisible = true;
+
+    // Add toggle functionality
+    toggleButton.addEventListener('click', () => {
+        isSidebarVisible = !isSidebarVisible;
+        settingsPanel.classList.toggle('hidden');
+        
+        // Rotate toggle button icon
+        toggleButton.querySelector('svg').style.transform = 
+            isSidebarVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+        
+        // Save preference
+        localStorage.setItem('sidebarVisible', isSidebarVisible);
+    });
+
+    // Load saved preference
+    const savedSidebarState = localStorage.getItem('sidebarVisible');
+    if (savedSidebarState !== null) {
+        isSidebarVisible = savedSidebarState === 'true';
+        if (!isSidebarVisible) {
+            settingsPanel.classList.add('hidden');
+            toggleButton.querySelector('svg').style.transform = 'rotate(180deg)';
+        }
+    }
 }); 
