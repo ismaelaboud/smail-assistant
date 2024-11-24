@@ -161,4 +161,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add this event listener
     updateNameBtn.addEventListener('click', updateBotName);
+
+    // Add this function to handle workspace clicks
+    function openWorkspace(type) {
+        fetch('/open-workspace', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ workspace: type })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.url) {
+                window.open(data.url, '_blank');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
 }); 
