@@ -302,4 +302,34 @@ body {
     font-size: 14px;
     font-weight: 500;
 }
+
+.audio-controls {
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+.stop-button {
+    padding: 10px;
+    background: linear-gradient(135deg, #ff4b4b, #ff0000);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+}
+
+.stop-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 0, 0, 0.4);
+}
+
+.stop-button svg {
+    width: 20px;
+    height: 20px;
+    stroke: white;
+}
  

@@ -56,6 +56,40 @@ document.addEventListener('DOMContentLoaded', function() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
+    const stopAudioButton = document.getElementById('stop-audio');
+    let currentAudio = null;
+
+    function playAudioResponse(audioBase64) {
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+            stopAudioButton.style.display = 'none';
+        }
+
+        if (audioBase64) {
+            currentAudio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
+            
+            currentAudio.onplay = () => {
+                stopAudioButton.style.display = 'flex';
+            };
+
+            currentAudio.onended = () => {
+                stopAudioButton.style.display = 'none';
+                currentAudio = null;
+            };
+
+            currentAudio.play();
+        }
+    }
+
+    stopAudioButton.addEventListener('click', () => {
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+            stopAudioButton.style.display = 'none';
+        }
+    });
+
     async function sendMessage() {
         const message = userInput.value.trim();
         if (!message) return;
@@ -75,10 +109,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             addMessage(data.text, false);
 
-            // Play audio response if available
             if (data.audio) {
-                const audio = new Audio(`data:audio/mp3;base64,${data.audio}`);
-                audio.play();
+                playAudioResponse(data.audio);
             }
 
         } catch (error) {
