@@ -5,3 +5,10 @@ __pycache__/
 credentials.json
 token.pickle
 venv/
+.replit/
+.breakpoints
+replit.nix
+.upm/
+.config/
+.replit.backup
+poetry.lock
