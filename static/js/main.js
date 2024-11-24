@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Update the sendMessage function to its original version
     async function sendMessage() {
         const message = userInput.value.trim();
         if (!message) return;

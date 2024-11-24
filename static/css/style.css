@@ -148,18 +148,28 @@ body {
     align-items: center;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    height: 54px;
+}
+
+.input-wrapper:focus-within {
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.2);
 }
 
 #user-input {
     width: 100%;
-    padding: 15px;
-    padding-right: 45px;
+    height: 100%;
+    padding: 0 45px 0 15px;
     border: none;
     border-radius: 15px;
     background: transparent;
     color: white;
     font-size: 16px;
     transition: all 0.3s ease;
+    outline: none;
+    line-height: 54px;
 }
 
 #user-input::placeholder {
@@ -168,20 +178,25 @@ body {
 
 .send-icon {
     position: absolute;
-    right: 12px;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 8px;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0;
     transition: all 0.3s ease;
+    z-index: 2;
 }
 
 .send-icon svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     stroke: rgba(255, 255, 255, 0.7);
     transition: all 0.3s ease;
 }
@@ -252,20 +267,7 @@ body {
 }
 
 .glow::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: inherit;
-    box-shadow: 0 0 30px rgba(0, 123, 255, 0.5);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.glow:hover::after {
-    opacity: 1;
+    display: none;
 }
 
 #bot-name {

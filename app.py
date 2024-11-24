@@ -19,7 +19,7 @@ def chat():
     try:
         message = request.json.get('message')
         
-        # Get response from Mistral AI
+        # Updated for Pixtral-12B
         response = requests.post(
             'https://api.mistral.ai/v1/chat/completions',
             headers={
@@ -27,10 +27,22 @@ def chat():
                 'Content-Type': 'application/json'
             },
             json={
-                'model': 'mistral-tiny',
-                'messages': [{"role": "user", "content": message}],
+                'model': 'pixtral-12b',  # Changed model to pixtral-12b
+                'messages': [
+                    {
+                        "role": "system",
+                        "content": "You are a helpful AI assistant capable of understanding and processing both text and images."
+                    },
+                    {
+                        "role": "user",
+                        "content": message
+                    }
+                ],
                 'temperature': 0.7,
-                'max_tokens': 500
+                'max_tokens': 1000,  # Increased max tokens for longer responses
+                'top_p': 0.9,
+                'presence_penalty': 0.1,
+                'frequency_penalty': 0.1
             },
             timeout=int(os.getenv('REQUEST_TIMEOUT', 30))
         )
