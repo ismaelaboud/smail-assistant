@@ -258,6 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleButton.addEventListener('click', () => {
         isSidebarVisible = !isSidebarVisible;
         settingsPanel.classList.toggle('hidden');
+        document.querySelector('.container').classList.toggle('sidebar-hidden');
         
         // Rotate toggle button icon
         toggleButton.querySelector('svg').style.transform = 
@@ -273,6 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
         isSidebarVisible = savedSidebarState === 'true';
         if (!isSidebarVisible) {
             settingsPanel.classList.add('hidden');
+            document.querySelector('.container').classList.add('sidebar-hidden');
             toggleButton.querySelector('svg').style.transform = 'rotate(180deg)';
         }
     }

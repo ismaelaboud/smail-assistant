@@ -1,20 +1,62 @@
-from flask import Flask, render_template, request, jsonify
+import os
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from chatbot import PersonalizedChatbot
 import os
 from dotenv import load_dotenv
 import requests
+from flask_login import (
+    LoginManager,
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+    UserMixin
+)
+from google_auth import flow, get_google_provider_cfg, GOOGLE_CLIENT_ID
+import google.auth.transport.requests
+from google.oauth2 import id_token
+from pip._vendor import cachecontrol
+import json
 
 # Load environment variables
 load_dotenv()
 
+# User class
+class User(UserMixin):
+    def __init__(self, user_id, name, email):
+        self.id = user_id
+        self.name = name
+        self.email = email
+
+# Initialize Flask app
 app = Flask(__name__)
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
 chatbot = PersonalizedChatbot(name="ismael")
+
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+# User loader callback
+@login_manager.user_loader
+def load_user(user_id):
+    if "google_id" not in session:
+        return None
+    return User(
+        user_id=session["google_id"],
+        name=session.get("name"),
+        email=session.get("email")
+    )
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
 @app.route('/chat', methods=['POST'])
+@login_required  # Add this decorator to protect the chat route
 def chat():
     try:
         message = request.json.get('message')
@@ -73,6 +115,60 @@ def update_voice():
         volume=float(config.get('volume', 0.9))
     )
     return jsonify({'status': 'success'})
+
+@app.route("/login")
+def login():
+    authorization_url, state = flow.authorization_url()
+    session["state"] = state
+    return redirect(authorization_url)
+
+@app.route("/callback")
+def callback():
+    try:
+        flow.fetch_token(authorization_response=request.url)
+
+        if not session["state"] == request.args["state"]:
+            return redirect(url_for("login"))
+
+        credentials = flow.credentials
+        request_session = requests.session()
+        cached_session = cachecontrol.CacheControl(request_session)
+        token_request = google.auth.transport.requests.Request(session=cached_session)
+
+        try:
+            id_info = id_token.verify_oauth2_token(
+                id_token=credentials._id_token,
+                request=token_request,
+                audience=GOOGLE_CLIENT_ID,
+                clock_skew_in_seconds=300  # Add 5 minutes of clock skew tolerance
+            )
+        except ValueError as e:
+            print(f"Token verification error: {str(e)}")
+            return redirect(url_for("login"))
+
+        session["google_id"] = id_info.get("sub")
+        session["name"] = id_info.get("name")
+        session["email"] = id_info.get("email")
+        
+        # Create and login user
+        user = User(
+            user_id=session["google_id"],
+            name=session["name"],
+            email=session["email"]
+        )
+        login_user(user)
+        
+        return redirect(url_for("home"))
+    except Exception as e:
+        print(f"Callback error: {str(e)}")
+        return redirect(url_for("login"))
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    session.clear()
+    return redirect(url_for("home"))
 
 if __name__ == '__main__':
     app.run(debug=True) 

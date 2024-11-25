@@ -10,6 +10,17 @@
 <body>
     <div class="landing-container" id="landing-page">
         <div class="hero-section">
+            {% if current_user.is_authenticated %}
+            <div class="user-info">
+                <p>Welcome, {{ current_user.name }}!</p>
+                <a href="{{ url_for('logout') }}" class="google-btn">Logout</a>
+            </div>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="google-btn">
+                <img src="https://www.google.com/favicon.ico" alt="Google logo" width="20">
+                Sign in with Google
+            </a>
+            {% endif %}
             <h1>What do you want to talk about?</h1>
             <p class="subtitle">Chat, voice interact, and explore with AI assistance.</p>
             <button class="start-chat-btn" onclick="startChat()">Start Chatting</button>

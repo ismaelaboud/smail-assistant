@@ -1,35 +1,25 @@
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-import os.path
-import pickle
+from flask import current_app, url_for
+from google.oauth2 import id_token
+from google_auth_oauthlib.flow import Flow
+from pip._vendor import cachecontrol
+import google.auth.transport.requests
+import requests
+import os
+import pathlib
+import json
 
-SCOPES = [
-    'https://www.googleapis.com/auth/gmail.compose',
-    'https://www.googleapis.com/auth/spreadsheets',
-    'https://www.googleapis.com/auth/documents'
-]
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "credentials.json")
 
-def get_google_auth():
-    creds = None
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', 
-                SCOPES
-            )
-            creds = flow.run_local_server(
-                port=0,
-                prompt='consent'
-            )
-        
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
-    
-    return creds 
+flow = Flow.from_client_secrets_file(
+    client_secrets_file=client_secrets_file,
+    scopes=[
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "openid"
+    ],
+    redirect_uri="http://127.0.0.1:5000/callback"
+)
+
+def get_google_provider_cfg():
+    return requests.get(os.getenv("GOOGLE_DISCOVERY_URL")).json() 

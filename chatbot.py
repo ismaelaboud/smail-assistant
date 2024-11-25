@@ -4,9 +4,6 @@ import queue
 import base64
 import requests
 from config import API_KEY
-from googleapiclient.discovery import build
-from google_auth import get_google_auth
-from email.mime.text import MIMEText
 
 class PersonalizedChatbot:
     def __init__(self, name="ismael"):
@@ -34,11 +31,11 @@ Commands available:
 
 Always respond as smail and be helpful and friendly."""
 
-        # Initialize Google services
-        self.google_creds = get_google_auth()
-        self.gmail_service = build('gmail', 'v1', credentials=self.google_creds)
-        self.docs_service = build('docs', 'v1', credentials=self.google_creds)
-        self.sheets_service = build('sheets', 'v4', credentials=self.google_creds)
+        # Remove Google services initialization
+        self.google_creds = None
+        self.gmail_service = None
+        self.docs_service = None
+        self.sheets_service = None
 
     def _setup_voice(self):
         voices = self.engine.getProperty('voices')
@@ -48,53 +45,13 @@ Always respond as smail and be helpful and friendly."""
         self.engine.setProperty('volume', self.voice_config['volume'])
 
     def send_email(self, to, subject, body):
-        try:
-            message = MIMEText(body)
-            message['to'] = to
-            message['subject'] = subject
-            
-            raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
-            self.gmail_service.users().messages().send(
-                userId='me',
-                body={'raw': raw_message}
-            ).execute()
-            return True, "Email sent successfully!"
-        except Exception as e:
-            return False, f"Error sending email: {str(e)}"
+        return False, "Email functionality is currently disabled"
 
     def create_doc(self, title, content):
-        try:
-            doc = self.docs_service.documents().create(
-                body={"title": title}
-            ).execute()
-            
-            self.docs_service.documents().batchUpdate(
-                documentId=doc['documentId'],
-                body={
-                    'requests': [{
-                        'insertText': {
-                            'location': {'index': 1},
-                            'text': content
-                        }
-                    }]
-                }
-            ).execute()
-            
-            return True, f"Document created: https://docs.google.com/document/d/{doc['documentId']}"
-        except Exception as e:
-            return False, f"Error creating document: {str(e)}"
+        return False, "Document creation is currently disabled"
 
     def update_sheet(self, spreadsheet_id, range_name, values):
-        try:
-            self.sheets_service.spreadsheets().values().update(
-                spreadsheetId=spreadsheet_id,
-                range=range_name,
-                valueInputOption='USER_ENTERED',
-                body={'values': values}
-            ).execute()
-            return True, "Sheet updated successfully!"
-        except Exception as e:
-            return False, f"Error updating sheet: {str(e)}"
+        return False, "Sheet updates are currently disabled"
 
     def chat(self, user_input):
         try:
