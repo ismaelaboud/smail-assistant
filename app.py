@@ -19,6 +19,8 @@ import google.auth.transport.requests
 from google.oauth2 import id_token
 from pip._vendor import cachecontrol
 import json
+from flask_sqlalchemy import SQLAlchemy
+from models import db, Chat
 
 # Load environment variables
 load_dotenv()
@@ -33,6 +35,8 @@ class User(UserMixin):
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chats.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 chatbot = PersonalizedChatbot(name="ismael")
 
 # Initialize Flask-Login
@@ -51,12 +55,20 @@ def load_user(user_id):
         email=session.get("email")
     )
 
+# Initialize extensions
+db.init_app(app)
+login_manager.init_app(app)
+
+# Create tables
+with app.app_context():
+    db.create_all()
+
 @app.route('/')
 def home():
     return render_template('index.html')
 
 @app.route('/chat', methods=['POST'])
-@login_required  # Add this decorator to protect the chat route
+@login_required
 def chat():
     try:
         message = request.json.get('message')
@@ -94,6 +106,15 @@ def chat():
         
         # Generate audio response
         audio_response = chatbot.text_to_speech(bot_response)
+        
+        # Save the chat to database
+        new_chat = Chat(
+            user_id=current_user.id,
+            message=message,
+            response=bot_response
+        )
+        db.session.add(new_chat)
+        db.session.commit()
         
         return jsonify({
             'text': bot_response,
@@ -169,6 +190,15 @@ def logout():
     logout_user()
     session.clear()
     return redirect(url_for("home"))
+
+@app.route('/get-chats', methods=['GET'])
+@login_required
+def get_chats():
+    chats = Chat.query.filter_by(user_id=current_user.id)\
+                     .order_by(Chat.timestamp.desc())\
+                     .limit(50)\
+                     .all()
+    return jsonify([chat.to_dict() for chat in chats])
 
 if __name__ == '__main__':
     app.run(debug=True) 

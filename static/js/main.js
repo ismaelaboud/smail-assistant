@@ -1,6 +1,7 @@
 function startChat() {
     document.getElementById('landing-page').style.display = 'none';
     document.getElementById('chat-app').style.display = 'flex';
+    loadChatHistory();
 }
 
 let recognition;
@@ -290,4 +291,98 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Make sure usePrompt is accessible globally
     window.usePrompt = usePrompt;
+
+    // Add this function to load chat history
+    async function loadChatHistory() {
+        if (!document.getElementById('chat-messages')) return;
+        
+        try {
+            const response = await fetch('/get-chats');
+            if (!response.ok) throw new Error('Failed to load chat history');
+            
+            const chats = await response.json();
+            const chatMessages = document.getElementById('chat-messages');
+            const historyList = document.getElementById('chat-history-list');
+            
+            // Clear existing history
+            historyList.innerHTML = '';
+            
+            // Add chat history items
+            chats.forEach(chat => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'chat-history-item';
+                historyItem.innerHTML = `
+                    <div class="chat-timestamp">${chat.timestamp}</div>
+                    <div class="chat-preview">${chat.message}</div>
+                `;
+                
+                // Add click handler to show full conversation
+                historyItem.addEventListener('click', () => {
+                    // Clear chat messages
+                    chatMessages.innerHTML = '';
+                    
+                    // Add the selected conversation
+                    const userDiv = document.createElement('div');
+                    userDiv.className = 'message user-message';
+                    userDiv.textContent = chat.message;
+                    chatMessages.appendChild(userDiv);
+                    
+                    const botDiv = document.createElement('div');
+                    botDiv.className = 'message bot-message';
+                    botDiv.textContent = chat.response;
+                    chatMessages.appendChild(botDiv);
+                    
+                    // Scroll to bottom
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                });
+                
+                historyList.appendChild(historyItem);
+            });
+            
+        } catch (error) {
+            console.error('Error loading chat history:', error);
+        }
+    }
+
+    // Add after your existing DOMContentLoaded event listener
+    document.querySelectorAll('.sidebar-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Remove active class from all buttons
+            document.querySelectorAll('.sidebar-nav-btn').forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            btn.classList.add('active');
+            
+            // Hide all sections
+            document.querySelectorAll('.sidebar-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show the selected section
+            const sectionId = btn.dataset.section + '-section';
+            document.getElementById(sectionId).style.display = 'block';
+            
+            // Load chat history if that section is selected
+            if (btn.dataset.section === 'chat-history') {
+                loadChatHistory();
+            }
+        });
+    });
+
+    // Add this to your existing DOMContentLoaded event listener
+    const voiceSettingsToggle = document.getElementById('voice-settings-toggle');
+    const voiceSettingsContent = document.getElementById('voice-settings-content');
+
+    voiceSettingsToggle.addEventListener('click', () => {
+        voiceSettingsContent.classList.toggle('show');
+        voiceSettingsToggle.classList.toggle('active');
+    });
+
+    // Close voice settings when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!voiceSettingsToggle.contains(e.target) && 
+            !voiceSettingsContent.contains(e.target)) {
+            voiceSettingsContent.classList.remove('show');
+            voiceSettingsToggle.classList.remove('active');
+        }
+    });
 }); 
